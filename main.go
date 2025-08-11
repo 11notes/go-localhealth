@@ -5,9 +5,13 @@ import (
 	"os"
 	"net/http"
 	"regexp"
+	"crypto/tls"
 )
 
 func main(){
+	// ignore self signed certificates
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
 	if(len(os.Args) > 1){
 		method := "GET"
 		args := os.Args[1:]
@@ -15,7 +19,7 @@ func main(){
 		if len(args) > 1 && args[1] == "-I" {
 			method = "HEAD"
 		}
-		if ok, _ := regexp.MatchString(`^(http|https)://127.0.0.1:\d+/(\S+|)$`, url); ok {
+		if ok, _ := regexp.MatchString(`^(?i)http(s|)://127.0.0.1:\d+/(\S+|)$`, url); ok {
 			req, err := http.NewRequest(method, url, nil)
 			if err != nil {
 				fail(fmt.Sprintf("http.NewRequest: %s", err))
